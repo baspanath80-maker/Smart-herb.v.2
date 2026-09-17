@@ -1,4 +1,4 @@
-const CACHE_NAME = "smart-herb-v1";
+const CACHE_NAME = "smart-herb-v2";
 
 const FILES = [
   "./",
@@ -11,7 +11,6 @@ const FILES = [
   "https://fonts.googleapis.com/css2?family=Krub:wght@400;600;700&family=Mitr:wght@300;400;600&display=swap"
 ];
 
-// ติดตั้งและบังคับใช้ทันที
 self.addEventListener("install", event => {
   self.skipWaiting();
   event.waitUntil(
@@ -19,7 +18,6 @@ self.addEventListener("install", event => {
   );
 });
 
-// ลบ Cache เวอร์ชันเก่าออกทั้งหมด
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -32,7 +30,6 @@ self.addEventListener("activate", event => {
   );
 });
 
-// ดึงข้อมูลจาก Network ก่อน ถ้าไม่มีอินเทอร์เน็ตค่อยดึงจาก Cache (Network-First)
 self.addEventListener("fetch", event => {
   event.respondWith(
     fetch(event.request)
