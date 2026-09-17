@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>ระบบค้นหายาสมุนไพรฉลาด (Smart Herb)</title>
+    <title>Smart Herb</title>
     
     <!-- PWA & Meta Tags -->
     <meta name="theme-color" content="#00897b">
     <meta name="background-color" content="#e0f2f1">
-    <meta name="description" content="ระบบค้นหายาสมุนไพรฉลาดและคัดกรองความปลอดภัยในการใช้ยา">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,6 +18,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="./180.png">
     <link rel="icon" type="image/png" sizes="192x192" href="./192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="./512.png">
+    <link rel="shortcut icon" href="./192.png">
 
     <!-- Font Awesome & Fonts CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -85,12 +85,12 @@
             flex: 1;
         }
 
-        /* PWA Card Styles (สไตล์ใหม่) */
+        /* PWA Card Styles */
         .install-app-box {
             background: #ffffff;
             border: 1.5px solid #b2dfdb;
             border-radius: 20px;
-            padding: 16px 20px;
+            padding: 14px 18px;
             margin-bottom: 15px;
             box-shadow: 0 6px 15px rgba(0, 137, 123, 0.08);
         }
@@ -100,16 +100,28 @@
             justify-content: space-between;
             gap: 12px;
         }
+        .pwa-text-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .pwa-logo-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid #e0e0e0;
+        }
         .pwa-text-info h3 {
             margin: 0;
             color: var(--primary-dark);
             font-family: 'Mitr', sans-serif;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
         }
         .pwa-text-info p {
             margin: 2px 0 0;
-            font-size: 13px;
+            font-size: 12.5px;
             color: #607d8b;
         }
         .btn-group-pwa {
@@ -256,14 +268,14 @@
         }
 
         .herb-logo-container {
-            width: 70px;
-            height: 70px;
+            width: 75px;
+            height: 75px;
             background: #ffffff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             box-shadow: 0 0 20px rgba(255, 179, 0, 0.6);
             animation: floatLogo 3s ease-in-out infinite;
             overflow: hidden;
@@ -273,13 +285,13 @@
 
         @keyframes floatLogo {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+            50% { transform: translateY(-6px); }
         }
 
         header h1 {
             font-family: 'Mitr', sans-serif;
             margin: 5px 0 0;
-            font-size: 1.6em;
+            font-size: 1.5em;
             font-weight: 600;
         }
 
@@ -609,8 +621,11 @@
     <div class="install-app-box" id="installBox">
       <div class="pwa-header-row">
         <div class="pwa-text-info">
-          <h3><i class="fa-solid fa-leaf"></i> เพิ่ม Smart Herb ลงหน้าจอ</h3>
-          <p>เปิดค้นหาได้รวดเร็วทันใจ ใช้งานได้แม้ไม่มีสัญญาณอินเทอร์เน็ต</p>
+          <img src="./192.png" alt="Logo" class="pwa-logo-thumb" onerror="this.style.display='none'">
+          <div>
+            <h3>เพิ่ม Smart Herb ลงหน้าจอ</h3>
+            <p>เปิดค้นหาได้รวดเร็วทันใจ ใช้งานได้แม้ไม่มีสัญญาณอินเทอร์เน็ต</p>
+          </div>
         </div>
         <div class="btn-group-pwa">
           <button type="button" class="btn-install-direct" id="directInstallBtn" style="display: none;">
@@ -1131,7 +1146,7 @@
     let currentFilteredList = [];
     let isDropdownOpen = false;
 
-    /* PWA Install & Modal Logic (แบบเดียวกับตัวอย่าง) */
+    /* PWA Install & Modal Logic */
     let deferredPrompt = null;
     const installBox = document.getElementById("installBox");
     const directInstallBtn = document.getElementById("directInstallBtn");
@@ -1165,7 +1180,6 @@
         if (!deferredPrompt) return;
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        console.log(`Prompt outcome: ${outcome}`);
         deferredPrompt = null;
         directInstallBtn.style.display = "none";
       });
