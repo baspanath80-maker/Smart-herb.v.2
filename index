@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบค้นหายาสมุนไพรฉลาด (Smart Herb)</title>
+    
+    <!-- PWA Integration Links -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#00897b">
+    
+    <!-- Apple Touch Icon สำหรับ iOS -->
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Krub:wght@400;600;700&family=Mitr:wght@300;400;600&display=swap');
+
+        :root {
+            --primary: #00897b;
+            --primary-dark: #00695c;
+            --accent: #ffb300;
+            --bg-body: #e0f2f1;
+            --bg-card: #ffffff;
+            --text-main: #37474f;
+            --danger: #ef5350;
+            --danger-dark: #c62828;
+            --warning: #fb8c00;
+            --success: #66bb6a;
+            --info: #29b6f6;
+            --shadow-soft: 0 10px 30px rgba(0, 137, 123, 0.1);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Krub', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 10px;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50px;
+            left: -50px;
+            width: calc(100% + 100px);
+            height: calc(100% + 100px);
+            background-image: 
+                radial-gradient(var(--primary) 1px, transparent 1px),
+                radial-gradient(var(--accent) 1px, transparent 1px);
+            background-size: 50px 50px;
+            background-position: 0 0, 25px 25px;
+            opacity: 0.05;
+            z-index: -1;
+            animation: bgMove 10s linear infinite;
+        }
+
+        @keyframes bgMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            flex: 1;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px 15px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .herb-logo-container {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            background: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            box-shadow: 0 0 20px rgba(255, 179, 0, 0.6);
+            animation: floatLogo 3s ease-in-out infinite;
+            overflow: hidden;
+        }
+
+        .herb-logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @keyframes floatLogo {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        header h1 {
+            font-family: 'Mitr', sans-serif;
+            margin: 5px 0 0;
+            font-size: 1.6em;
+            font-weight: 600;
+        }
+
+        .pwa-install-btn {
+            display: none;
+            margin-top: 10px;
+            background: var(--accent);
+            color: #37474f;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-family: 'Mitr', sans-serif;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        /* 🔴 Patient Safety Checklist */
+        .safety-checklist-area {
+            background-color: #ffffff;
+            padding: 18px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 15px;
+        }
+
+        .safety-title {
+            font-family: 'Mitr', sans-serif;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.05em;
+        }
+
+        .blink-danger {
+            color: #d32f2f;
+            font-weight: bold;
+            animation: textBlink 1s infinite alternate;
+        }
+
+        @keyframes textBlink {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.15); opacity: 0.5; }
+        }
+
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .risk-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+            user-select: none;
+        }
+
+        .risk-card:hover {
+            border-color: #ef5350;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 83, 80, 0.15);
+        }
+
+        .risk-card .risk-icon {
+            font-size: 1.6em;
+            margin-bottom: 6px;
+            color: #e53935;
+            transition: color 0.25s ease;
+        }
+
+        .risk-card .risk-title {
+            font-family: 'Mitr', sans-serif;
+            font-size: 0.88em;
+            font-weight: 600;
+            line-height: 1.2;
+            color: var(--text-main);
+        }
+
+        .risk-card .risk-desc {
+            font-size: 0.75em;
+            color: #78909c;
+            margin-top: 4px;
+        }
+
+        .risk-card.checked {
+            background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%);
+            border-color: #b71c1c;
+            color: white;
+            box-shadow: 0 4px 12px rgba(183, 28, 28, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .risk-card.checked .risk-icon,
+        .risk-card.checked .risk-title,
+        .risk-card.checked .risk-desc {
+            color: #ffffff !important;
+        }
+
+        /* Search Area */
+        .search-area {
+            background-color: var(--bg-card);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 15px;
+        }
+
+        .section-label {
+            font-family: 'Mitr', sans-serif;
+            font-weight: 600;
+            color: var(--primary-dark);
+            font-size: 0.95em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .symptom-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .symptom-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+        }
+
+        .symptom-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 137, 123, 0.15);
+        }
+
+        .symptom-card.active {
+            background: var(--primary);
+            border-color: var(--primary-dark);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 137, 123, 0.3);
+        }
+
+        .symptom-card .symptom-icon {
+            font-size: 1.6em;
+            margin-bottom: 6px;
+            color: var(--primary);
+            transition: color 0.25s ease;
+        }
+
+        .symptom-card.active .symptom-icon { color: #ffffff; }
+
+        .symptom-card .symptom-title {
+            font-family: 'Mitr', sans-serif;
+            font-size: 0.88em;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .symptom-card .symptom-desc {
+            font-size: 0.75em;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        .symptom-card.active .symptom-desc { color: #e0f2f1; }
+
+        .search-box-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            position: relative;
+        }
+
+        .search-input-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input-container input {
+            width: 100%;
+            padding: 10px 15px;
+            padding-right: 60px;
+            font-size: 0.95em;
+            font-family: 'Krub', sans-serif;
+            color: var(--text-main);
+            background-color: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-input-container input:focus {
+            border-color: var(--primary);
+            background-color: #fff;
+        }
+
+        .input-actions {
+            position: absolute;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .clear-btn { background: none; border: none; color: #90a4ae; font-size: 1.2em; cursor: pointer; display: none; }
+        .dropdown-toggle-btn { background: none; border: none; color: var(--primary); font-size: 0.9em; cursor: pointer; }
+
+        .dropdown-list {
+            position: absolute;
+            top: 100%; left: 0; width: 100%;
+            background: white; border: 1px solid #e0e0e0; border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-height: 220px; overflow-y: auto;
+            z-index: 100; margin-top: 5px; display: none;
+        }
+
+        .dropdown-item { padding: 8px 15px; cursor: pointer; font-size: 0.9em; }
+        .dropdown-item:hover { background-color: #e0f2f1; color: var(--primary-dark); }
+
+        #resultContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 15px;
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            #resultContainer { grid-template-columns: 1fr; }
+        }
+
+        .herb-card {
+            background-color: var(--bg-card);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid #e0f2f1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .herb-card-header {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .herb-name-area { display: flex; align-items: center; gap: 10px; }
+        .herb-card-icon { font-size: 1.6em; color: var(--primary); }
+        .herb-title { font-family: 'Mitr', sans-serif; font-size: 1.2em; color: var(--primary-dark); margin: 0; }
+        .herb-sub { font-size: 0.85em; color: #78909c; }
+
+        .replace-tag {
+            background: linear-gradient(135deg, var(--accent) 0%, #ffa000 100%);
+            color: var(--primary-dark);
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 0.8em;
+            display: inline-block;
+            margin-left: 35px;
+        }
+
+        .danger-alert-banner {
+            background-color: #b71c1c;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.88em;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .info-section { display: flex; flex-direction: column; gap: 8px; }
+
+        .info-block {
+            background-color: #fcfcfc;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .info-block.indication { border-left: 4px solid var(--success); }
+        .info-block.dosage { border-left: 4px solid var(--info); }
+        .info-block.contraindication { border-left: 4px solid var(--danger); }
+        .info-block.side-effect { border-left: 4px solid var(--warning); }
+
+        .info-head { font-weight: 700; margin-bottom: 2px; font-size: 0.88em; }
+        .indication .info-head { color: var(--success); }
+        .dosage .info-head { color: var(--info); }
+        .contraindication .info-head { color: var(--danger); }
+        .side-effect .info-head { color: var(--warning); }
+        .info-content { color: var(--text-main); font-size: 0.88em; line-height: 1.35; }
+
+        .no-result {
+            grid-column: 1 / -1;
+            text-align: center;
+            background-color: var(--bg-card);
+            padding: 35px 20px;
+            border-radius: 15px;
+            color: #90a4ae;
+            box-shadow: var(--shadow-soft);
+        }
+
+        footer {
+            margin-top: 20px;
+            padding: 15px 10px;
+            text-align: center;
+            font-size: 0.85em;
+            color: #004d40;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="herb-logo-container">
+            <!-- ดึงภาพโลโก้มาแสดงตรง Header -->
+            <img src="./icons/icon-192.png" alt="Smart Herb Logo" class="herb-logo-img" onerror="this.style.display='none'; document.getElementById('fallbackIcon').style.display='block';">
+            <div id="fallbackIcon" style="display:none; font-size:2em; color:var(--primary);"><i class="fa-solid fa-leaf"></i></div>
+        </div>
+        <h1>ระบบค้นหายาสมุนไพร (Smart Herb)</h1>
+        <button id="btnInstall" class="pwa-install-btn"><i class="fa-solid fa-download"></i> ติดตั้ง Smart Herb</button>
+    </header>
+
+    <!-- 🔴 Patient Safety Checklist -->
+    <div class="safety-checklist-area">
+        <div class="safety-title">
+            <span class="blink-danger"><i class="fa-solid fa-triangle-exclamation"></i></span> 
+            คัดกรองกลุ่มเสี่ยงและข้อควรระวัง (Patient Safety Checklist)
+        </div>
+        <div class="risk-grid">
+            <div class="risk-card" id="btnChild" onclick="toggleRiskGroup('btnChild')">
+                <div class="risk-icon"><i class="fa-solid fa-baby"></i></div>
+                <div class="risk-title">เด็ก</div>
+                <div class="risk-desc">Children</div>
+            </div>
+
+            <div class="risk-card" id="btnElder" onclick="toggleRiskGroup('btnElder')">
+                <div class="risk-icon"><i class="fa-solid fa-person-cane"></i></div>
+                <div class="risk-title">ผู้สูงอายุ</div>
+                <div class="risk-desc">Elderly</div>
+            </div>
+
+            <div class="risk-card" id="btnPreg" onclick="toggleRiskGroup('btnPreg')">
+                <div class="risk-icon"><i class="fa-solid fa-person-breastfeeding"></i></div>
+                <div class="risk-title">ตั้งครรภ์</div>
+                <div class="risk-desc">Pregnancy</div>
+            </div>
+
+            <div class="risk-card" id="btnLact" onclick="toggleRiskGroup('btnLact')">
+                <div class="risk-icon"><i class="fa-solid fa-baby-carriage"></i></div>
+                <div class="risk-title">ให้นมบุตร</div>
+                <div class="risk-desc">Lactation</div>
+            </div>
+
+            <div class="risk-card" id="btnChronic" onclick="toggleRiskGroup('btnChronic')">
+                <div class="risk-icon"><i class="fa-solid fa-hospital"></i></div>
+                <div class="risk-title">โรคประจำตัว</div>
+                <div class="risk-desc">รักษาต่อเนื่อง</div>
+            </div>
+
+            <div class="risk-card" id="btnLiver" onclick="toggleRiskGroup('btnLiver')">
+                <div class="risk-icon"><i class="fa-solid fa-notes-medical"></i></div>
+                <div class="risk-title">โรคตับ</div>
+                <div class="risk-desc">Liver Disease</div>
+            </div>
+
+            <div class="risk-card" id="btnKidney" onclick="toggleRiskGroup('btnKidney')">
+                <div class="risk-icon"><i class="fa-solid fa-droplet"></i></div>
+                <div class="risk-title">โรคไต</div>
+                <div class="risk-desc">Kidney Disease</div>
+            </div>
+
+            <div class="risk-card" id="btnBlood" onclick="toggleRiskGroup('btnBlood')">
+                <div class="risk-icon"><i class="fa-solid fa-vial"></i></div>
+                <div class="risk-title">ต้านเกล็ดเลือด</div>
+                <div class="risk-desc">Anticoagulants</div>
+            </div>
+
+            <div class="risk-card" id="btnAllergy" onclick="toggleRiskGroup('btnAllergy')">
+                <div class="risk-icon"><i class="fa-solid fa-hand-dots"></i></div>
+                <div class="risk-title">ประวัติแพ้ยา</div>
+                <div class="risk-desc">หรือแพ้สมุนไพร</div>
+            </div>
+
+            <div class="risk-card" id="btnPoly" onclick="toggleRiskGroup('btnPoly')">
+                <div class="risk-icon"><i class="fa-solid fa-pills"></i></div>
+                <div class="risk-title">ใช้ยาหลายชนิด</div>
+                <div class="risk-desc">Polypharmacy</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔍 Search Area -->
+    <div class="search-area">
+        <span class="section-label">📁 ค้นหาจากกลุ่มอาการ:</span>
+        <div class="symptom-grid">
+            <div class="symptom-card" onclick="selectSymptomCard(this, 'ทางเดินอาหาร')">
+                <div class="symptom-icon"><i class="fa-solid fa-utensils"></i></div>
+                <div class="symptom-title">ทางเดินอาหาร</div>
+                <div class="symptom-desc">จุกเสียด ท้องอืด ท้องผูก</div>
+            </div>
+            <div class="symptom-card" onclick="selectSymptomCard(this, 'ไข้หวัด')">
+                <div class="symptom-icon"><i class="fa-solid fa-head-side-cough"></i></div>
+                <div class="symptom-title">ทางเดินหายใจ / ไข้</div>
+                <div class="symptom-desc">ตัวร้อน เจ็บคอ หวัด ไอ</div>
+            </div>
+            <div class="symptom-card" onclick="selectSymptomCard(this, 'กล้ามเนื้อ')">
+                <div class="symptom-icon"><i class="fa-solid fa-child-reaching"></i></div>
+                <div class="symptom-title">กล้ามเนื้อ / ปวดเมื่อย</div>
+                <div class="symptom-desc">ปวดกล้ามเนื้อ ชาปลายมือ/เท้า</div>
+            </div>
+            <div class="symptom-card" onclick="selectSymptomCard(this, 'ผิวหนัง')">
+                <div class="symptom-icon"><i class="fa-solid fa-hand-dots"></i></div>
+                <div class="symptom-title">ผิวหนัง / แผล</div>
+                <div class="symptom-desc">กลากเกลื้อน เริม เชื้อรา</div>
+            </div>
+            <div class="symptom-card" onclick="selectSymptomCard(this, 'ทางเดินปัสสาวะ')">
+                <div class="symptom-icon"><i class="fa-solid fa-droplet"></i></div>
+                <div class="symptom-title">ทางเดินปัสสาวะ</div>
+                <div class="symptom-desc">ขัดเบา ขับนิ่วขนาดเล็ก</div>
+            </div>
+            <div class="symptom-card" onclick="selectSymptomCard(this, 'อื่นๆ')">
+                <div class="symptom-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <div class="symptom-title">อาการอื่นๆ</div>
+                <div class="symptom-desc">บำรุงโลหิต ถอนพิษ อดบุหรี่</div>
+            </div>
+        </div>
+
+        <div class="search-box-wrap">
+            <span class="section-label">🔄 ค้นจากยาแผนปัจจุบัน (เพื่อจ่ายแทน):</span>
+            <div class="search-input-container">
+                <input type="text" id="modernDrugInput" placeholder="🔍 พิมพ์ค้นหา หรือกดเพื่อเลือกยาแผนปัจจุบัน..." oninput="filterModernDrugs()" onfocus="showDropdownDirect()">
+                <div class="input-actions">
+                    <button class="clear-btn" id="clearSearchBtn" onclick="clearSearchInput()">×</button>
+                    <button class="dropdown-toggle-btn" id="dropdownToggleBtn" onclick="toggleDropdown(event)"><i class="fa-solid fa-chevron-down"></i></button>
+                </div>
+                <div class="dropdown-list" id="modernDrugDropdown"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultContainer">
+        <div class="no-result">
+            <div style="font-size:3em; margin-bottom:10px; color: var(--primary);"><i class="fa-solid fa-seedling"></i></div>
+            <div>กรุณาเลือกกลุ่มอาการหรือตัวยาแผนปัจจุบันด้านบน เพื่อค้นหายาไทยครับ</div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    พัฒนาโดย: <strong>นายปนัทธพล จิตนาเรียง</strong> พยาบาลวิชาชีพชำนาญการ<br>
+    โรงพยาบาลดอนจาน จังหวัดกาฬสินธุ์ (เขตสุขภาพที่ 7)
+</footer>
+
+<script>
+    const herbDatabase = [
+        {
+            name: "1. ยาขมิ้นชัน", sub: "(450 mg./cap.)", icon: "<i class='fa-solid fa-capsules'></i>", category: "ทางเดินอาหาร",
+            replace: "🔄 Simethicone, Sodamint, M. carminative",
+            indication: "บรรเทาอาการแน่นจุกเสียด ท้องอืดท้องเฟ้อ อาหารไม่ย่อย โรคกระเพาะอาหาร",
+            dosage: "1-2 แคปซูล วันละ 3 ครั้ง หลังอาหาร (pc)",
+            contraindication: "ห้ามใช้ในผู้ที่ท่อน้ำดีอุดตันหรือผู้ที่ไวต่อยานี้ ระวังในผู้ป่วยโรคนิ่วในถุงน้ำดี, หญิงตั้งครรภ์",
+            sideEffect: "ระวังการใช้ในเด็กเนื่องจากยังไม่มีข้อมูล / ระวังใช้ร่วมกับ anticoagulants, antiplatelets",
+            safetyRules: { child: "warn", elder: "safe", preg: "warn", lact: "safe", chronic: "warn", liver: "safe", kidney: "safe", blood: "danger", allergy: "warn", poly: "warn" }
+        },
+        {
+            name: "2. ยาธาตุอบเชย", sub: "(180 ซี.ซี.)", icon: "<i class='fa-solid fa-bottle-droplet'></i>", category: "ทางเดินอาหาร",
+            replace: "🔄 M. carminative",
+            indication: "แก้ท้องอืด ท้องเฟ้อ จุกเสียด แน่นท้อง",
+            dosage: "15 ml วันละ 3 ครั้ง หลังอาหาร (pc)",
+            contraindication: "ระวังการใช้ยาอย่างต่อเนื่องในผู้ที่มีความผิดปกติของตับ ไต เนื่องจากอาจเกิดการสะสมของการบูร",
+            sideEffect: "ระวังการสะสมและเกิดพิษจากการบูรเมื่อใช้ติดต่อกันนาน",
+            safetyRules: { child: "safe", elder: "warn", preg: "safe", lact: "safe", chronic: "safe", liver: "warn", kidney: "warn", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "3. ยาธาตุบรรจบ", sub: "(450 mg./cap.)", icon: "<i class='fa-solid fa-pills'></i>", category: "ทางเดินอาหาร",
+            replace: "🔄 Loperamide 2 mg.",
+            indication: "ใช้ในคนไข้อุจจาระธาตุพิการ ท้องผูก ท้องเฟ้อ อาหารไม่ย่อย ถ่ายอุจจาระยาก",
+            dosage: "2 แคปซูล วันละ 3 ครั้ง ก่อนอาหาร (ac)",
+            contraindication: "ห้ามใช้ในหญิงตั้งครรภ์ และผู้ที่มีไข้",
+            sideEffect: "ระวังใช้ร่วมกับ anticoagulants, antiplatelets / ระวังในโรคตับไต",
+            safetyRules: { child: "warn", elder: "safe", preg: "danger", lact: "safe", chronic: "warn", liver: "warn", kidney: "warn", blood: "danger", allergy: "warn", poly: "warn" }
+        },
+        {
+            name: "4. ยาฟ้าทะลายโจน (หวัด/เจ็บคอ)", sub: "(400 mg./cap.)", icon: "<i class='fa-solid fa-leaf'></i>", category: "ไข้หวัด",
+            replace: "🔄 Paracetamol 500 mg, Serratiopeptidase 5 mg.",
+            indication: "เจ็บคอ มีอาการไข้หวัด",
+            dosage: "3-4 แคปซูล วันละ 4 ครั้ง หลังอาหาร (pc)",
+            contraindication: "ห้ามใช้ในหญิงตั้งครรภ์และให้นมบุตร (เสี่ยงทารกวิรูป) ห้ามใช้กรณีเจ็บคอติดเชื้อ Streptococcus A",
+            sideEffect: "ไม่ควรทานเกิน 7 วัน หากใช้ติดต่อกันเวลานานอาจทำให้แขนขามีอาการชาอ่อนแรง",
+            safetyRules: { child: "warn", elder: "safe", preg: "danger", lact: "danger", chronic: "warn", liver: "safe", kidney: "safe", blood: "danger", allergy: "warn", poly: "warn" }
+        },
+        {
+            name: "5. ยามะระขี้นก", sub: "(450 mg./cap.)", icon: "<i class='fa-solid fa-tablets'></i>", category: "ไข้หวัด",
+            replace: "🔄 Paracetamol 500 mg.",
+            indication: "แก้ไข้ แก้ร้อนใน เจริญอาหาร",
+            dosage: "1 แคปซูล วันละ 3 ครั้ง หลังอาหาร (pc)",
+            contraindication: "ห้ามใช้ในเด็กหรือหญิงให้นมบุตร (ทำให้น้ำตาลในเลือดลดลงมากจนชักได้)",
+            sideEffect: "ระวังใช้ร่วมกับยาลดน้ำตาลในเลือด/อินสุลิน อาจเกิดอาการคลื่นไส้ วิงเวียน ชักในเด็ก",
+            safetyRules: { child: "danger", elder: "safe", preg: "safe", lact: "danger", chronic: "danger", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "warn" }
+        },
+        {
+            name: "6. ยาห้าราก", sub: "(450 mg./cap.)", icon: "<i class='fa-solid fa-tree'></i>", category: "ไข้หวัด",
+            replace: "🔄 Paracetamol 500mg",
+            indication: "บรรเทาอาการไข้ ตัวร้อน",
+            dosage: "3 แคปซูล วันละ 3 ครั้ง ก่อนอาหาร (ac)",
+            contraindication: "ไม่แนะนำในผู้สงสัยไข้เลือดออก ไม่แนะนำในหญิงที่มีไข้ระหว่างมีประจำเดือน",
+            sideEffect: "หากใช้เกิน 3 วันไม่ดีขึ้นควรพบแพทย์",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "safe", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "7. ยาจันทน์ลีลา", sub: "(450 mg./cap.)", icon: "<i class='fa-solid fa-spa'></i>", category: "ไข้หวัด",
+            replace: "🔄 Paracetamol 500mg.",
+            indication: "บรรเทาอาการไข้ตัวร้อน ไข้เปลี่ยนฤดู แก้ปวดเมื่อย",
+            dosage: "2 แคปซูล ทุก 4 ชั่วโมง เมื่อมีอาการ (prn)",
+            contraindication: "ไม่แนะนำให้ใช้ในผู้ที่สงสัยว่าเป็นไข้เลือดออก",
+            sideEffect: "ปลอดภัยสูงเมื่อใช้ตามระยะเวลาที่กำหนด",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "safe", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "8. ยาสหัศธารา", sub: "(500 mg./cap.)", icon: "<i class='fa-solid fa-capsules'></i>", category: "กล้ามเนื้อ",
+            replace: "🔄 NSAIDs, Orphenadrine+Para, Diclofenac",
+            indication: "อาการปวดกล้ามเนื้อ ชาปลายมือปลายเท้า",
+            dosage: "2 แคปซูล วันละ 3 ครั้ง ก่อนอาหาร (ac)",
+            contraindication: "ห้ามใช้ในหญิงตั้งครรภ์ และผู้ที่มีไข้ ระวังในผู้ป่วย HT, HD, Peptic ulcer, Gerd และโรคตับไต",
+            sideEffect: "ระวังใช้ร่วมกับ anticoagulants, antiplatelets และยาหลายชนิด (มีพริกไทยสูง)",
+            safetyRules: { child: "warn", elder: "warn", preg: "danger", lact: "safe", chronic: "danger", liver: "danger", kidney: "danger", blood: "danger", allergy: "warn", poly: "danger" }
+        },
+        {
+            name: "9. ยาธรณีสันฑะฆาต", sub: "(500 mg./cap.)", icon: "<i class='fa-solid fa-pills'></i>", category: "ทางเดินอาหาร",
+            replace: "🔄 Bisacodyl 5mg, Milk of Magnesia",
+            indication: "ท้องผูก ปวดเมื่อย ท้องเป็นเถาเป็นดาน",
+            dosage: "2 แคปซูล ก่อนนอน (hs)",
+            contraindication: "ห้ามใช้ในหญิงตั้งครรภ์/ผู้มีไข้ ระวังในผู้สูงอายุ โรคตับ/ไต และผู้ป่วย HT, HD",
+            sideEffect: "ระวังระคายเคืองกระเพาะอาหาร และระวังการสะสมของการบูร",
+            safetyRules: { child: "warn", elder: "warn", preg: "danger", lact: "safe", chronic: "danger", liver: "danger", kidney: "danger", blood: "safe", allergy: "warn", poly: "warn" }
+        },
+        {
+            name: "10. ยาผสมเพชรสังฆาต", sub: "(450 mg./cap.)", icon: "<i class='fa-solid fa-prescription-bottle-medical'></i>", category: "ทางเดินอาหาร",
+            replace: "🔄 Daflon, Siduol",
+            indication: "บรรเทาอาการริดสีดวงทวารและเป็นยาระบาย",
+            dosage: "2 แคปซูล วันละ 3 ครั้ง หลังอาหารทันที (pc)",
+            contraindication: "ควรระวังการใช้ยาในหญิงตั้งครรภ์และหญิงให้นมบุตร",
+            sideEffect: "อาจทำให้เกิดอาการท้องเสีย หรือมวนท้องได้ในบางราย",
+            safetyRules: { child: "safe", elder: "safe", preg: "warn", lact: "warn", chronic: "safe", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "11. ยาบำรุงโลหิต", sub: "(ผง 15 กรัม/ซอง)", icon: "<i class='fa-solid fa-syringe'></i>", category: "อื่นๆ",
+            replace: "🔄 Ferrous Sulfate, Ferrous Fumarate",
+            indication: "บำรุงโลหิต หลังผ่าตัด ป่วยหนัก ป่วยเรื้อรัง",
+            dosage: "1 กรัม (1 ช้อนชา) วันละ 2 ครั้ง ก่อนอาหาร (ac)",
+            contraindication: "ห้ามใช้ในหญิงตั้งครรภ์ และผู้ที่มีไข้ ระวังในผู้ที่แพ้ละอองเกสรดอกไม้",
+            sideEffect: "ระวังการใช้ร่วมกับยาต้านการแข็งตัวของเลือด (anticoagulants, antiplatelets)",
+            safetyRules: { child: "safe", elder: "safe", preg: "danger", lact: "safe", chronic: "warn", liver: "safe", kidney: "safe", blood: "danger", allergy: "danger", poly: "warn" }
+        },
+        {
+            name: "12. ยาแก้ไอผสมมะขามป้อม", sub: "(60 cc.)", icon: "<i class='fa-solid fa-bottle-droplet'></i>", category: "ไข้หวัด",
+            replace: "🔄 Bromhexine, Acetylcysteine",
+            indication: "บรรเทาอาการไอ ขับเสมหะ",
+            dosage: "15 ml หลังอาหาร (pc) หรือจิบเมื่อมีอาการ",
+            contraindication: "ห้ามใช้ในผู้ป่วยเบาหวานที่ไม่สามารถควบคุมระดับน้ำตาลในเลือดได้ (สูตรมีน้ำเชื่อม)",
+            sideEffect: "ระวังในผู้ป่วยที่ท้องเสียงง่าย เนื่องจากมะขามป้อมมีฤทธิ์เป็นยาระบาย",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "warn", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "13. ยาประสะไพล", sub: "(450 mg./cap.)", icon: "<i class='fa-solid fa-capsules'></i>", category: "อื่นๆ",
+            replace: "🔄 Mefenamic acid 250mg",
+            indication: "แก้ระดูมาไม่สม่ำเสมอ บรรเทาอาการปวดประจำเดือน ขับน้ำคาวปลา",
+            dosage: "2 แคปซูล วันละ 3 ครั้ง ก่อนอาหาร (ac)",
+            contraindication: "ห้ามใช้ในหญิงตกเลือดหลังคลอด หญิงตั้งครรภ์ ผู้มีไข้",
+            sideEffect: "ระวังการใช้ต่อเนื่องในผู้ป่วยโรคตับ ไต เนื่องจากอาจเกิดการสะสมของการบูร",
+            safetyRules: { child: "warn", elder: "safe", preg: "danger", lact: "safe", chronic: "warn", liver: "danger", kidney: "danger", blood: "danger", allergy: "warn", poly: "warn" }
+        },
+        {
+            name: "14. น้ำมันไพล", sub: "(18 cc.)", icon: "<i class='fa-solid fa-vial-virus'></i>", category: "กล้ามเนื้อ",
+            replace: "🔄 Analgesic balm",
+            indication: "บรรเทาอาการบวม ฟกช้ำ เคล็ดยอก",
+            dosage: "ทาถูบริเวณที่มีอาการวันละ 2-3 ครั้ง",
+            contraindication: "ห้ามทาบริเวณขอบตา เนื้อเยื่ออ่อน และแผลเปิด",
+            sideEffect: "ไม่มีอาการข้างเคียงรุนแรงเมื่อทาภายนอก",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "safe", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "15. ชาชงรางจืด", sub: "(2 กรัม/ถุง)", icon: "<i class='fa-solid fa-mug-hot'></i>", category: "อื่นๆ",
+            replace: "🔄 ลดสารเคมี / ถอนพิษ",
+            indication: "ลดระดับสารเคมีตกค้างในเลือด ถอนพิษเบื่อเมา แก้ร้อนใน",
+            dosage: "1 ถุง แช่น้ำร้อน 200 cc วันละ 3 ครั้ง",
+            contraindication: "ระวังในผู้ป่วย DM (อาจเกิดน้ำตาลในเลือดต่ำ) ระวังผู้ใช้ยาอื่นต่อเนื่องเพราะเร่งการขับยาออก",
+            sideEffect: "ลดประสิทธิภาพของยาแผนปัจจุบันที่รับประทานร่วมกัน (Polypharmacy)",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "warn", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "danger" }
+        },
+        {
+            name: "16. ชาชงมะขามแขก", sub: "(2 กรัม/ถุง)", icon: "<i class='fa-solid fa-mug-hot'></i>", category: "ทางเดินอาหาร",
+            replace: "🔄 Bisacodyl 5mg, Milk of magnesia",
+            indication: "บรรเทาอาการท้องผูก",
+            dosage: "1 ถุง แช่น้ำร้อน 200 cc ดื่มก่อนนอน",
+            contraindication: "ห้ามใช้ในผู้ป่วยลำไส้อุดตัน ระวังในเด็กต่ำกว่า 12 ปี หรือผู้ป่วย IBD",
+            sideEffect: "ขนาดสูงอาจเกิดไตอักเสบ ระวังในหญิงตั้งครรภ์/ให้นมบุตร",
+            safetyRules: { child: "danger", elder: "warn", preg: "danger", lact: "danger", chronic: "warn", liver: "safe", kidney: "danger", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "17. ชาชงหญ้าดอกขาว", sub: "(2 กรัม/ถุง)", icon: "<i class='fa-solid fa-mug-hot'></i>", category: "อื่นๆ",
+            replace: "🔄 ลดความอยากบุหรี่",
+            indication: "ลดความอยากบุหรี่",
+            dosage: "1 ถุง แช่น้ำร้อน 200 cc วันละ 3 ครั้ง หลังอาหารและก่อนนอน",
+            contraindication: "ควรระวังเป็นพิเศษในผู้ที่เป็นโรคไต และโรคหัวใจ เนื่องจากมีโพแทสเซียมสูง",
+            sideEffect: "อาการไม่พึงประสงค์ที่พบได้คือ ปากแห้ง คอแห้ง",
+            safetyRules: { child: "safe", elder: "warn", preg: "safe", lact: "safe", chronic: "danger", liver: "safe", kidney: "danger", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "18. ยาขิง แคปซูล", sub: "(450 mg./cap.)", icon: "<i class='fa-solid fa-capsules'></i>", category: "ทางเดินอาหาร",
+            replace: "🔄 Simethicone 80mg, M.carminative",
+            indication: "บรรเทาอาการท้องอืด ท้องเฟ้อ",
+            dosage: "2 แคปซูล วันละ 3 ครั้ง หลังอาหารทันที (opc)",
+            contraindication: "ระวังการใช้ร่วมกับ anticoagulants, antiplatelets และโรคนิ่วในถุงน้ำดี",
+            sideEffect: "อาจเกิดอาการแสบร้อนบริเวณทางเดินอาหารได้",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "warn", liver: "safe", kidney: "safe", blood: "danger", allergy: "warn", poly: "warn" }
+        },
+        {
+            name: "19. ยาขิง ชาชง", sub: "(2 กรัม/ถุง)", icon: "<i class='fa-solid fa-mug-hot'></i>", category: "อื่นๆ",
+            replace: "🔄 Dimenhydrinate",
+            indication: "บรรเทาอาการเวียนศีรษะ คลื่นไส้อาเจียน เมารถ เมาเรือ",
+            dosage: "1 ถุง ชงน้ำร้อน 100 cc วันละ 3 ครั้ง หลังอาหารทันที",
+            contraindication: "ระวังการใช้ร่วมกับยาต้านเกล็ดเลือด/แข็งตัวของเลือด และคนไข้นิ่วในถุงน้ำดี",
+            sideEffect: "แสบร้อนบริเวณทางเดินอาหาร ระคายเคืองปากและคอ",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "warn", liver: "safe", kidney: "safe", blood: "danger", allergy: "warn", poly: "warn" }
+        },
+        {
+            name: "20. ยาหอมเทพจิต", sub: "(15 กรัม/ซอง)", icon: "<i class='fa-solid fa-mortar-pestle'></i>", category: "อื่นๆ",
+            replace: "🔄 Dimenhydrinate 50mg, Cinnarizine 25mg",
+            indication: "บรรเทาอาการเวียนศีรษะ แก้จุกเสียด",
+            dosage: "1-2 ช้อนชา ละลายน้ำ 1 แก้ว ดื่มวันละ 3 ครั้ง ก่อนอาหาร",
+            contraindication: "ห้ามใช้ในหญิงตั้งครรภ์ ระวังใช้ร่วมกับ anticoagulants, antiplatelets และผู้แพ้เกสรดอกไม้",
+            sideEffect: "ควรระวังในผู้ป่วยแพ้ละอองเกสร",
+            safetyRules: { child: "safe", elder: "safe", preg: "danger", lact: "safe", chronic: "safe", liver: "safe", kidney: "safe", blood: "danger", allergy: "danger", poly: "warn" }
+        },
+        {
+            name: "21. ยาหอมนวโกศ", sub: "(15 กรัม/ซอง)", icon: "<i class='fa-solid fa-mortar-pestle'></i>", category: "อื่นๆ",
+            replace: "🔄 Dimenhydrinate 50mg, Cinnarizine 25mg",
+            indication: "แก้วิงเวียน คลื่นไส้ อาเจียน นอนไม่หลับ",
+            dosage: "1-2 ช้อนชา ละลายน้ำ 1 แก้ว ดื่มวันละ 3 ครั้ง ก่อนอาหาร",
+            contraindication: "ห้ามใช้ในหญิงตั้งครรภ์และผู้ที่มีไข้ ระวังใช้ร่วมกับ anticoagulants, antiplatelets",
+            sideEffect: "ควรระวังการใช้กับผู้ป่วยที่มีประวัติแพ้เกสรดอกไม้",
+            safetyRules: { child: "safe", elder: "safe", preg: "danger", lact: "safe", chronic: "safe", liver: "safe", kidney: "safe", blood: "danger", allergy: "danger", poly: "warn" }
+        },
+        {
+            name: "22. ยาไฟห้ากอง", sub: "(500 mg./cap.)", icon: "<i class='fa-solid fa-fire-flame-curved'></i>", category: "อื่นๆ",
+            replace: "🔄 ขับน้ำคาวปลา",
+            indication: "ขับน้ำคาวปลา ช่วยให้มดลูกเข้าอู่",
+            dosage: "2 แคปซูล วันละ 3 ครั้ง ก่อนอาหาร (ac)",
+            contraindication: "ห้ามใช้ในหญิงตกเลือดหลังคลอด หญิงตั้งครรภ์ ผู้มีไข้ และผ่าคลอด",
+            sideEffect: "ห้ามใช้ในกรณีผ่าคลอดเด็ดขาด",
+            safetyRules: { child: "danger", elder: "danger", preg: "danger", lact: "safe", chronic: "warn", liver: "safe", kidney: "safe", blood: "danger", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "23. ยาเขียวหอม", sub: "(15 กรัม/ซอง)", icon: "<i class='fa-solid fa-seedling'></i>", category: "ไข้หวัด",
+            replace: "🔄 Paracetamol 500mg",
+            indication: "บรรเทาอาการไข้ ร้อนใน กระหายน้ำ แก้พิษหัด อีสุกอีใส",
+            dosage: "1-2 ช้อนชา ละลายน้ำ 1 แก้ว วันละ 3 ครั้ง ก่อนอาหารและก่อนนอน",
+            contraindication: "ไม่แนะนำให้ใช้ในผู้ที่สงสัยว่าเป็นไข้เลือดออก ระวังในผู้แพ้เกสรดอกไม้",
+            sideEffect: "อาจบดบังอาการไข้เลือดออก",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "safe", liver: "safe", kidney: "safe", blood: "safe", allergy: "danger", poly: "safe" }
+        },
+        {
+            name: "24. ยาประสะมะแว้ง", sub: "(ชนิดเม็ดอม)", icon: "<i class='fa-solid fa-pills'></i>", category: "ไข้หวัด",
+            replace: "🔄 Bromhexine, Acetylcysteine",
+            indication: "บรรเทาอาการไอ มีเสหะ ทำให้ชุ่มคอ",
+            dosage: "อมครั้งละ 3-5 เม็ด เมื่อมีอาการ",
+            contraindication: "ไม่ควรใช้ติดต่อกันนานเกิน 15 วัน",
+            sideEffect: "ไม่มีผลข้างเคียงรุนแรงเมื่อใช้ตามแพทย์สั่ง",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "safe", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "25. ยาปราบชมพูทวีป", sub: "(450 mg./cap.)", icon: "<i class='fa-solid fa-capsules'></i>", category: "ไข้หวัด",
+            replace: "🔄 Antihistamine (แก้แพ้/หอบหืด)",
+            indication: "ภูมิแพ้อากาศ หอบหืด หลอดลมอักเสบ",
+            dosage: "2-3 แคปซูล วันละ 3 ครั้ง ก่อนอาหารและก่อนนอน",
+            contraindication: "ห้ามใช้ในหญิงตั้งครรภ์ ผู้มีไข้ และเด็ก ระวังในผู้ป่วย HT, HD, Peptic ulcer, Gerd",
+            sideEffect: "ระวังใช้ร่วมกับยาหลายชนิด (พริกไทยสูง) อาจเกิดอาการแสบร้อนยอดอก",
+            safetyRules: { child: "danger", elder: "warn", preg: "danger", lact: "safe", chronic: "danger", liver: "danger", kidney: "danger", blood: "danger", allergy: "danger", poly: "danger" }
+        },
+        {
+            name: "26. ยาอำมฤควาที", sub: "(15 กรัม/ซอง)", icon: "<i class='fa-solid fa-mortar-pestle'></i>", category: "ไข้หวัด",
+            replace: "🔄 Bromhexine, Acetylcysteine",
+            indication: "บรรเทาอาการไอ ขับเสมหะ",
+            dosage: "ผู้ใหญ่: 1 ช้อนชา ละลายน้ำเมื่อมีอาการ",
+            contraindication: "ห้ามใช้ในหญิงตั้งครรภ์ ควรระวังการใช้ในผู้ป่วยที่เป็นแผลในกระเพาะอาหาร",
+            sideEffect: "ระคายเคืองระบบทางเดินอาหาร ปวดท้อง ท้องผูก ปัสสาวะบ่อย คอแห้ง และใจสั่น",
+            safetyRules: { child: "warn", elder: "safe", preg: "danger", lact: "safe", chronic: "warn", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "27. ยาเถาวัลย์เปรียง", sub: "(450 mg./cap.)", icon: "<i class='fa-solid fa-capsules'></i>", category: "กล้ามเนื้อ",
+            replace: "🔄 Orphenadrine+para, Tolperisone, Diclofenac",
+            indication: "บรรเทาอาการปวดตึงกล้ามเนื้อ",
+            dosage: "2 แคปซูล วันละ 3 ครั้ง หลังอาหารทันทีและก่อนนอน",
+            contraindication: "ห้ามใช้ในหญิงตั้งครรภ์ และควรระวังการใช้ในผู้ป่วยที่เป็นแผลในกระเพาะอาหาร",
+            sideEffect: "ระคายเคืองระบบทางเดินอาหาร ปวดท้อง ท้องผูก ปัสสาวะบ่อย",
+            safetyRules: { child: "warn", elder: "safe", preg: "danger", lact: "safe", chronic: "warn", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "28. ยาเจลพริก", sub: "(ยาทาภายนอก)", icon: "<i class='fa-solid fa-pepper-hot'></i>", category: "กล้ามเนื้อ",
+            replace: "🔄 Capsaicin gel, ครีมพริก",
+            indication: "บรรเทาอาการปวดข้อ กล้ามเนื้อ",
+            dosage: "ทาบริเวณที่ปวด 3-4 ครั้งต่อวัน",
+            contraindication: "ห้ามใช้ในผู้ที่แพ้ capsaicin ห้ามทาบริเวณขอบตาและเนื้อเยื่ออ่อน",
+            sideEffect: "การใช้ร่วมกับยา ACE inhibitor อาจทำให้ไอเพิ่มขึ้น ผิวหนังแดง ปวด แแสบร้อน",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "safe", liver: "safe", kidney: "safe", blood: "safe", allergy: "danger", poly: "warn" }
+        },
+        {
+            name: "29. ยาไพล ยาครีม", sub: "(ยาทาภายนอก)", icon: "<i class='fa-solid fa-pump-soap'></i>", category: "กล้ามเนื้อ",
+            replace: "🔄 Analgesic Balm, ครีมไพล",
+            indication: "ทาภายนอกเพื่อลดอาการอักเสบกล้ามเนื้อ",
+            dosage: "ทาบริเวณที่มีอาการ วันละ 2 ครั้ง เช้า-เย็น",
+            contraindication: "ห้ามทาบริเวณขอบตาและเนื้อเยื่ออ่อน ห้ามทาแผลเปิด",
+            sideEffect: "ปลอดภัยสูง ป้องกันไม่ให้เข้าตาหรือแผลเปิด",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "safe", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "30. ยาประคบสมุนไพร สด/แห้ง", sub: "(ใช้ประคบภายนอก)", icon: "<i class='fa-solid fa-basket-shopping'></i>", category: "กล้ามเนื้อ",
+            replace: "🔄 ลูกประคบ, บรรเทาปวดเมื่อย",
+            indication: "บรรเทาอาการปวดเมื่อยกล้ามเนื้อ ลดอาการอักเสบบวม",
+            dosage: "ประคบบริเวณที่ปวดเวลามีอาการ",
+            contraindication: "ห้ามประคบบริเวณที่มีแผล หรือการอักเสบเฉียบพลันใน 24 ชั่วโมงแรก",
+            sideEffect: "ระวังลูกประคบที่ร้อนเกินไปในคนไข้ DM, เด็ก, อัมพาต, ผู้สูงอายุ",
+            safetyRules: { child: "warn", elder: "warn", preg: "safe", lact: "safe", chronic: "warn", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "31. ยาเบญจกูล", sub: "(450 mg./cap.)", icon: "<i class='fa-solid fa-capsules'></i>", category: "ทางเดินอาหาร",
+            replace: "🔄 Simethicone 80mg, M.carminative",
+            indication: "บำรุงธาตุ แก้ธาตุให้ปกติ ท้องอืด ท้องเฟ้อ",
+            dosage: "2 แคปซูล วันละ 3 ครั้ง ก่อนอาหาร (ac)",
+            contraindication: "ห้ามใช้ในหญิงตั้งครรภ์ ผู้ที่มีไข้ เด็ก ไม่ควรใช้ยานี้ในฤดูร้อน",
+            sideEffect: "ไม่ควรรับประทานติดต่อกันนานเกิน 7 วัน",
+            safetyRules: { child: "danger", elder: "safe", preg: "danger", lact: "safe", chronic: "safe", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "32. ยาทิงเจอร์ทองพันชั่ง", sub: "(ยาทาภายนอก)", icon: "<i class='fa-solid fa-vial-virus'></i>", category: "ผิวหนัง",
+            replace: "🔄 Miconazole Cream, Clotrimazole",
+            indication: "ทาแก้กลากเกลื้อน โรคผิวหนังที่เกิดจากเชื้อรา",
+            dosage: "ทาบริเวณที่มีอาการ วันละ 2 ครั้ง เช้า-เย็น",
+            contraindication: "ห้ามทาบริเวณขอบตาและเนื้อเยื่ออ่อน ห้ามทาแผลเปิด",
+            sideEffect: "ระวังแสบร้อนบริเวณแผลเปิด",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "safe", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "33. ยาบัวบก ยาครีม", sub: "(ยาทาภายนอก)", icon: "<i class='fa-solid fa-pump-soap'></i>", category: "ผิวหนัง",
+            replace: "🔄 ยาสมานแผล, Centella cream",
+            indication: "ใช้สมานแผล",
+            dosage: "ใช้ทาบริเวณที่เป็นแผลวันละ 1-3 ครั้ง",
+            contraindication: "ห้ามใช้ในผู้ที่มีประวัติเป็นโรคมะเร็งผิวหนัง ห้ามใช้ในแผลเปิด",
+            sideEffect: "อาจทำให้เกิดผื่นแพ้สัมผัสได้ในบางราย",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "warn", liver: "safe", kidney: "safe", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "34. ยาพญายอครีม", sub: "(ยาทาภายนอก)", icon: "<i class='fa-solid fa-pump-soap'></i>", category: "ผิวหนัง",
+            replace: "🔄 Acyclovir Cream",
+            indication: "Herpes Simplex บรรเทาอาการเริม งูสวัด",
+            dosage: "ทาบริเวณที่มีอาการ วันละ 5 ครั้ง (ทุก 4 ชั่วโมง)",
+            contraindication: "ระวังหากมีประวัติแพ้พญายอ ห้ามทาในตา",
+            sideEffect: "ปลอดภัยสูง ไม่มีผลข้างเคียงรุนแรงระบุไว้",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "safe", liver: "safe", kidney: "safe", blood: "safe", allergy: "danger", poly: "safe" }
+        },
+        {
+            name: "35. ยาพญายอกลีเซอรีน", sub: "(10 cc.)", icon: "<i class='fa-solid fa-droplet'></i>", category: "ผิวหนัง",
+            replace: "🔄 Acyclovir oral paste, Triamcinolone oral paste",
+            indication: "เริมที่ปาก รักษาแผลร้อนใน (ปาก)",
+            dosage: "ป้ายแผลบริเวณปากบางๆ วันละ 5 ครั้ง",
+            contraindication: "หลีกเลี่ยงหากแพ้ส่วนประกอบในตำรับ",
+            sideEffect: "ปลอดภัย สามารถใช้ในช่องปากได้ตามข้อบ่งใช้",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "safe", liver: "safe", kidney: "safe", blood: "safe", allergy: "danger", poly: "safe" }
+        },
+        {
+            name: "36. ชาชงกระเจี๊ยบแดง", sub: "(2 กรัม/ถุง)", icon: "<i class='fa-solid fa-mug-hot'></i>", category: "ทางเดินปัสสาวะ",
+            replace: "🔄 ยาขับปัสสาวะ",
+            indication: "ปัสสาวะกระปริดกระปรอย",
+            dosage: "1 ซอง แช่น้ำร้อน 120-200cc วันละ 3 ครั้ง หลังอาหาร",
+            contraindication: "ห้ามใช้ในผู้ป่วยที่มีการทำงานของไตบกพร่อง",
+            sideEffect: "อาจทำให้เกิดอาการท้องเสียได้เนื่องจากมีฤทธิ์เป็นยาระบาย",
+            safetyRules: { child: "safe", elder: "safe", preg: "safe", lact: "safe", chronic: "warn", liver: "safe", kidney: "danger", blood: "safe", allergy: "warn", poly: "safe" }
+        },
+        {
+            name: "37. ชาชงหญ้าหนวดแมว", sub: "(2 กรัม/ถุง)", icon: "<i class='fa-solid fa-mug-hot'></i>", category: "ทางเดินปัสสาวะ",
+            replace: "🔄 ยาขับปัสสาวะ, ขับนิ่ว",
+            indication: "แก้ขัดเบา ชะล้างทางเดินปัสสาวะ ขับนิ่วขนาดเล็ก",
+            dosage: "1 ซอง แช่น้ำร้อน 120-200 cc ดื่มวันละ 2-3 ครั้งต่อวัน",
+            contraindication: "ห้ามใช้ในผู้ที่มีการทำงานของหัวใจและ/หรือไตบกพร่อง มีโพแทสเซียมสูง",
+            sideEffect: "ระวังการใช้ร่วมกับยาลดระดับน้ำตาลในเลือด",
+            safetyRules: { child: "safe", elder: "warn", preg: "safe", lact: "safe", chronic: "danger", liver: "safe", kidney: "danger", blood: "safe", allergy: "warn", poly: "warn" }
+        }
+    ];
+
+    const riskStatus = {
+        btnChild: false, btnElder: false, btnPreg: false, btnLact: false,
+        btnChronic: false, btnLiver: false, btnKidney: false, btnBlood: false,
+        btnAllergy: false, btnPoly: false
+    };
+
+    let allUniqueDrugs = [];
+    let currentFilteredList = [];
+    let isDropdownOpen = false;
+    let deferredPrompt;
+
+    window.onload = function() {
+        let uniqueDrugs = new Set();
+        herbDatabase.forEach(herb => {
+            if (herb.replace) {
+                const cleanText = herb.replace.replace("🔄", "").trim();
+                const drugs = cleanText.split(",");
+                drugs.forEach(drug => {
+                    const drugName = drug.trim();
+                    if(drugName) uniqueDrugs.add(drugName);
+                });
+            }
+        });
+        allUniqueDrugs = Array.from(uniqueDrugs).sort((a, b) => a.localeCompare(b, 'th', { sensitivity: 'base' }));
+
+        document.addEventListener("click", function(event) {
+            const container = document.querySelector(".search-input-container");
+            if (container && !container.contains(event.target)) {
+                closeDropdown();
+            }
+        });
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker Registered Successfully'))
+                .catch(err => console.error('SW Registration Failed:', err));
+        }
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const installBtn = document.getElementById('btnInstall');
+        installBtn.style.display = 'block';
+
+        installBtn.addEventListener('click', () => {
+            installBtn.style.display = 'none';
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                deferredPrompt = null;
+            });
+        });
+    });
+
+    function toggleRiskGroup(btnId) {
+        riskStatus[btnId] = !riskStatus[btnId];
+        const btn = document.getElementById(btnId);
+        
+        if (riskStatus[btnId]) {
+            btn.classList.add('checked');
+        } else {
+            btn.classList.remove('checked');
+        }
+
+        if (currentFilteredList.length > 0) {
+            renderResults(currentFilteredList);
+        }
+    }
+
+    function selectSymptomCard(cardElem, categoryName) {
+        document.querySelectorAll('.symptom-card').forEach(card => card.classList.remove('active'));
+        cardElem.classList.add('active');
+
+        document.getElementById("modernDrugInput").value = "";
+        document.getElementById("clearSearchBtn").style.display = "none";
+        closeDropdown();
+
+        currentFilteredList = herbDatabase.filter(herb => herb.category === categoryName);
+        renderResults(currentFilteredList);
+    }
+
+    function clearSymptomSelection() {
+        document.querySelectorAll('.symptom-card').forEach(card => card.classList.remove('active'));
+    }
+
+    function showDropdownDirect() {
+        const inputVal = document.getElementById("modernDrugInput").value.trim();
+        if (inputVal === "") {
+            renderDropdownItems(allUniqueDrugs);
+        } else {
+            filterModernDrugs();
+        }
+    }
+
+    function toggleDropdown(event) {
+        event.stopPropagation();
+        const dropdown = document.getElementById("modernDrugDropdown");
+        const toggleBtn = document.getElementById("dropdownToggleBtn");
+
+        if (isDropdownOpen) {
+            closeDropdown();
+        } else {
+            clearSymptomSelection();
+            const inputVal = document.getElementById("modernDrugInput").value.trim();
+            if (inputVal === "") {
+                renderDropdownItems(allUniqueDrugs);
+            } else {
+                const filtered = allUniqueDrugs.filter(drug => drug.toLowerCase().includes(inputVal.toLowerCase()));
+                renderDropdownItems(filtered);
+            }
+            dropdown.style.display = "block";
+            toggleBtn.classList.add("open");
+            isDropdownOpen = true;
+        }
+    }
+
+    function closeDropdown() {
+        const dropdown = document.getElementById("modernDrugDropdown");
+        const toggleBtn = document.getElementById("dropdownToggleBtn");
+        dropdown.style.display = "none";
+        toggleBtn.classList.remove("open");
+        isDropdownOpen = false;
+    }
+
+    function renderDropdownItems(itemsList) {
+        const dropdown = document.getElementById("modernDrugDropdown");
+        dropdown.innerHTML = "";
+        
+        if(itemsList.length > 0) {
+            itemsList.forEach(drug => {
+                const div = document.createElement("div");
+                div.className = "dropdown-item";
+                div.textContent = drug;
+                div.onclick = function(e) {
+                    e.stopPropagation();
+                    document.getElementById("modernDrugInput").value = drug;
+                    document.getElementById("clearSearchBtn").style.display = "block";
+                    closeDropdown();
+                    searchByModernDrugName(drug);
+                };
+                dropdown.appendChild(div);
+            });
+            dropdown.style.display = "block";
+        } else {
+            dropdown.innerHTML = `<div class="dropdown-item" style="color:#aaa; cursor:default;"><i class="fa-solid fa-circle-xmark"></i> ไม่พบตัวยานี้ในระบบ</div>`;
+            dropdown.style.display = "block";
+        }
+    }
+
+    function filterModernDrugs() {
+        const inputVal = document.getElementById("modernDrugInput").value.toLowerCase().trim();
+        const clearBtn = document.getElementById("clearSearchBtn");
+        clearSymptomSelection();
+
+        if(inputVal === "") {
+            clearBtn.style.display = "none";
+            renderDropdownItems(allUniqueDrugs);
+            resetContainerToDefault();
+            return;
+        }
+
+        clearBtn.style.display = "block";
+        const filtered = allUniqueDrugs.filter(drug => drug.toLowerCase().includes(inputVal));
+        renderDropdownItems(filtered);
+        
+        const exactMatch = allUniqueDrugs.find(d => d.toLowerCase() === inputVal);
+        if(exactMatch) {
+            searchByModernDrugName(exactMatch);
+        }
+    }
+
+    function clearSearchInput() {
+        document.getElementById("modernDrugInput").value = "";
+        document.getElementById("clearSearchBtn").style.display = "none";
+        closeDropdown();
+        clearSymptomSelection();
+        resetContainerToDefault();
+    }
+
+    function resetContainerToDefault() {
+        currentFilteredList = [];
+        document.getElementById("resultContainer").innerHTML = `
+            <div class="no-result">
+                <div style="font-size:3em; margin-bottom:10px; color: var(--primary);"><i class="fa-solid fa-seedling"></i></div>
+                <div>กรุณาเลือกกลุ่มอาการหรือตัวยาแผนปัจจุบันด้านบน เพื่อค้นหายาไทยครับ</div>
+            </div>`;
+    }
+
+    function searchByModernDrugName(drugName) {
+        const target = drugName.toLowerCase();
+        currentFilteredList = herbDatabase.filter(herb => herb.replace.toLowerCase().includes(target));
+        renderResults(currentFilteredList);
+    }
+
+    function renderResults(filteredHerbs) {
+        const container = document.getElementById("resultContainer");
+        container.innerHTML = "";
+
+        if (filteredHerbs.length === 0) {
+            container.innerHTML = `
+                <div class="no-result">
+                    <div style="font-size:3em; margin-bottom:10px; color: #90a4ae;"><i class="fa-solid fa-face-meh"></i></div>
+                    <div>ไม่พบข้อมูลยาสมุนไพรที่ตรงกับคำค้นหาในคลังยาปัจจุบัน</div>
+                </div>`;
+            return;
+        }
+
+        const checks = {
+            child: riskStatus.btnChild, elder: riskStatus.btnElder, preg: riskStatus.btnPreg,
+            lact: riskStatus.btnLact, chronic: riskStatus.btnChronic, liver: riskStatus.btnLiver,
+            kidney: riskStatus.btnKidney, blood: riskStatus.btnBlood, allergy: riskStatus.btnAllergy,
+            poly: riskStatus.btnPoly
+        };
+
+        const labels = {
+            child: "👶 ห้ามใช้ในเด็ก/ควรระวังเป็นพิเศษ",
+            elder: "👵 ควรระวังในผู้สูงอายุ",
+            preg: "🤰 ห้ามใช้ในหญิงตั้งครรภ์ เด็ดขาด!",
+            lact: "🍼 ห้ามใช้ในหญิงให้นมบุตร",
+            chronic: "🏥 ระวังในผู้มีโรคประจำตัว/อยู่ระหว่างรักษา",
+            liver: "🩺 ห้ามใช้/ควรระวังในผู้ป่วยโรคตับ",
+            kidney: "💧 ห้ามใช้/ควรระวังในผู้ป่วยโรคไต",
+            blood: "🩸 ระวังการใช้ร่วมกับยาต้านเกล็ดเลือด/แข็งตัว",
+            allergy: "⚠️ เสี่ยงแพ้ยา/แพ้สมุนไพรในตำรับ",
+            poly: "💊 ระวังปฏิกิริยาระหว่างยา (Polypharmacy)"
+        };
+
+        filteredHerbs.forEach((herb) => {
+            let criticalAlerts = [];
+            let warningAlerts = [];
+
+            Object.keys(checks).forEach(key => {
+                if (checks[key]) {
+                    const rule = herb.safetyRules[key];
+                    if (rule === "danger") {
+                        criticalAlerts.push(`❌ ${labels[key]}`);
+                    } else if (rule === "warn") {
+                        warningAlerts.push(`⚠️ ${labels[key]}`);
+                    }
+                }
+            });
+
+            const card = document.createElement("div");
+            card.className = "herb-card";
+
+            let alertBannerHtml = "";
+            if (criticalAlerts.length > 0) {
+                alertBannerHtml += `<div class="danger-alert-banner">${criticalAlerts.join("<br>")}</div>`;
+            }
+            if (warningAlerts.length > 0) {
+                alertBannerHtml += `<div class="danger-alert-banner" style="background-color: #f57c00;">${warningAlerts.join("<br>")}</div>`;
+            }
+
+            card.innerHTML = `
+                <div>
+                    <div class="herb-card-header">
+                        <div class="herb-name-area">
+                            <div class="herb-card-icon">${herb.icon}</div>
+                            <div>
+                                <h2 class="herb-title">${herb.name}</h2>
+                                <span class="herb-sub">${herb.sub}</span>
+                            </div>
+                        </div>
+                        <div class="replace-tag">${herb.replace}</div>
+                    </div>
+
+                    ${alertBannerHtml}
+
+                    <div class="info-section">
+                        <div class="info-block indication">
+                            <div class="info-head"><i class="fa-solid fa-clipboard-list"></i> สรรพคุณ / ข้อบ่งใช้</div>
+                            <div class="info-content">${herb.indication}</div>
+                        </div>
+                        <div class="info-block dosage">
+                            <div class="info-head"><i class="fa-solid fa-prescription-bottle-medical"></i> ปริมาณและวิธีใช้</div>
+                            <div class="info-content">${herb.dosage}</div>
+                        </div>
+                        <div class="info-block contraindication">
+                            <div class="info-head"><i class="fa-solid fa-circle-exclamation"></i> ข้อห้ามใช้ / ควรระวัง</div>
+                            <div class="info-content">${herb.contraindication}</div>
+                        </div>
+                        <div class="info-block side-effect">
+                            <div class="info-head"><i class="fa-solid fa-triangle-exclamation"></i> ผลข้างเคียง / ข้อระวังเพิ่มเติม</div>
+                            <div class="info-content">${herb.sideEffect}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+</script>
+
+</body>
+</html>
+
