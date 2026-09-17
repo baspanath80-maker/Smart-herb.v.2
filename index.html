@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Smart Herb</title>
-    
+
     <!-- PWA & Meta Tags -->
     <meta name="theme-color" content="#00897b">
     <meta name="background-color" content="#e0f2f1">
@@ -460,6 +460,11 @@
             flex-direction: column;
             gap: 5px;
             position: relative;
+            margin-bottom: 15px;
+        }
+
+        .search-box-wrap:last-child {
+            margin-bottom: 0;
         }
 
         .search-input-container {
@@ -739,34 +744,47 @@
 
     <!-- Search Area -->
     <div class="search-area">
-        <span class="section-label">📁 ค้นหาจากกลุ่มอาการ:</span>
+        <!-- เพิ่มช่องค้นหาตามคำระบุอาการ -->
+        <div class="search-box-wrap">
+            <span class="section-label">🩺 ค้นหาจากระบุอาการ / สรรพคุณ:</span>
+            <div class="search-input-container">
+                <input type="text" id="symptomInput" placeholder="🔍 พิมพ์อาการ เช่น ท้องอืด, ตัวร้อน, ปวดหลัง, แผล..." oninput="filterSymptomsText()" onfocus="showSymptomDropdownDirect()">
+                <div class="input-actions">
+                    <button class="clear-btn" id="clearSymptomBtn" onclick="clearSymptomInput()">×</button>
+                    <button class="dropdown-toggle-btn" id="symptomDropdownToggleBtn" onclick="toggleSymptomDropdown(event)"><i class="fa-solid fa-chevron-down"></i></button>
+                </div>
+                <div class="dropdown-list" id="symptomDropdown"></div>
+            </div>
+        </div>
+
+        <span class="section-label">📁 เลือกตามกลุ่มอาการหลัก:</span>
         <div class="symptom-grid">
-            <div class="symptom-card" onclick="selectSymptomCard(this, 'ทางเดินอาหาร')">
+            <div class="symptom-card" id="card-ทางเดินอาหาร" onclick="selectSymptomCard(this, 'ทางเดินอาหาร')">
                 <div class="symptom-icon"><i class="fa-solid fa-utensils"></i></div>
                 <div class="symptom-title">ทางเดินอาหาร</div>
                 <div class="symptom-desc">จุกเสียด ท้องอืด ท้องผูก</div>
             </div>
-            <div class="symptom-card" onclick="selectSymptomCard(this, 'ไข้หวัด')">
+            <div class="symptom-card" id="card-ไข้หวัด" onclick="selectSymptomCard(this, 'ไข้หวัด')">
                 <div class="symptom-icon"><i class="fa-solid fa-head-side-cough"></i></div>
                 <div class="symptom-title">ทางเดินหายใจ / ไข้</div>
                 <div class="symptom-desc">ตัวร้อน เจ็บคอ หวัด ไอ</div>
             </div>
-            <div class="symptom-card" onclick="selectSymptomCard(this, 'กล้ามเนื้อ')">
+            <div class="symptom-card" id="card-กล้ามเนื้อ" onclick="selectSymptomCard(this, 'กล้ามเนื้อ')">
                 <div class="symptom-icon"><i class="fa-solid fa-child-reaching"></i></div>
                 <div class="symptom-title">กล้ามเนื้อ / ปวดเมื่อย</div>
                 <div class="symptom-desc">ปวดกล้ามเนื้อ ชาปลายมือ/เท้า</div>
             </div>
-            <div class="symptom-card" onclick="selectSymptomCard(this, 'ผิวหนัง')">
+            <div class="symptom-card" id="card-ผิวหนัง" onclick="selectSymptomCard(this, 'ผิวหนัง')">
                 <div class="symptom-icon"><i class="fa-solid fa-hand-dots"></i></div>
                 <div class="symptom-title">ผิวหนัง / แผล</div>
                 <div class="symptom-desc">กลากเกลื้อน เริม เชื้อรา</div>
             </div>
-            <div class="symptom-card" onclick="selectSymptomCard(this, 'ทางเดินปัสสาวะ')">
+            <div class="symptom-card" id="card-ทางเดินปัสสาวะ" onclick="selectSymptomCard(this, 'ทางเดินปัสสาวะ')">
                 <div class="symptom-icon"><i class="fa-solid fa-droplet"></i></div>
                 <div class="symptom-title">ทางเดินปัสสาวะ</div>
                 <div class="symptom-desc">ขัดเบา ขับนิ่วขนาดเล็ก</div>
             </div>
-            <div class="symptom-card" onclick="selectSymptomCard(this, 'อื่นๆ')">
+            <div class="symptom-card" id="card-อื่นๆ" onclick="selectSymptomCard(this, 'อื่นๆ')">
                 <div class="symptom-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
                 <div class="symptom-title">อาการอื่นๆ</div>
                 <div class="symptom-desc">บำรุงโลหิต ถอนพิษ อดบุหรี่</div>
@@ -1144,8 +1162,10 @@
     };
 
     let allUniqueDrugs = [];
+    let allSymptomsList = [];
     let currentFilteredList = [];
     let isDropdownOpen = false;
+    let isSymptomDropdownOpen = false;
 
     /* PWA Install & Modal Logic */
     let deferredPrompt = null;
@@ -1217,6 +1237,7 @@
     }
 
     window.onload = function() {
+        // เตรียมรายชื่อยาแผนปัจจุบัน
         let uniqueDrugs = new Set();
         herbDatabase.forEach(herb => {
             if (herb.replace) {
@@ -1230,18 +1251,156 @@
         });
         allUniqueDrugs = Array.from(uniqueDrugs).sort((a, b) => a.localeCompare(b, 'th', { sensitivity: 'base' }));
 
+        // เตรียมรายการคำค้นหาอาการ/สรรพคุณยอดนิยม
+        allSymptomsList = [
+            "จุกเสียด", "ท้องอืด", "ท้องเฟ้อ", "อาหารไม่ย่อย", "โรคกระเพาะ", "ท้องผูก", 
+            "ถ่ายยาก", "อุจจาระธาตุพิการ", "ไข้", "ตัวร้อน", "เจ็บคอ", "ไข้หวัด", "ร้อนใน", 
+            "ไอ", "ขับเสมหะ", "ปวดกล้ามเนื้อ", "ชาปลายมือปลายเท้า", "ฟกช้ำ", "เคล็ดขัดยอก", 
+            "กลากเกลื้อน", "เชื้อรา", "เริม", "งูสวัด", "แผลร้อนใน", "แผลสด", 
+            "ขัดเบา", "ปัสสาวะกระปริดกระปรอย", "ขับนิ่ว", "บำรุงโลหิต", "ถอนพิษ", 
+            "เวียนศีรษะ", "คลื่นไส้", "อดบุหรี่", "ขับน้ำคาวปลา", "ปวดประจำเดือน"
+        ].sort((a, b) => a.localeCompare(b, 'th', { sensitivity: 'base' }));
+
         document.addEventListener("click", function(event) {
-            const container = document.querySelector(".search-input-container");
-            if (container && !container.contains(event.target)) {
+            const containerModern = document.getElementById("modernDrugInput")?.parentElement;
+            if (containerModern && !containerModern.contains(event.target)) {
                 closeDropdown();
+            }
+            const containerSymptom = document.getElementById("symptomInput")?.parentElement;
+            if (containerSymptom && !containerSymptom.contains(event.target)) {
+                closeSymptomDropdown();
             }
         });
     }
 
+    /* --- ส่วนจัดการค้นหาอาการด้วยตัวอักษร (Symptom Search) --- */
+    function showSymptomDropdownDirect() {
+        const inputVal = document.getElementById("symptomInput").value.trim();
+        if (inputVal === "") {
+            renderSymptomDropdownItems(allSymptomsList);
+        } else {
+            filterSymptomsText();
+        }
+    }
+
+    function toggleSymptomDropdown(event) {
+        event.stopPropagation();
+        const dropdown = document.getElementById("symptomDropdown");
+        const toggleBtn = document.getElementById("symptomDropdownToggleBtn");
+
+        if (isSymptomDropdownOpen) {
+            closeSymptomDropdown();
+        } else {
+            closeDropdown(); // ปิดอันอื่น
+            const inputVal = document.getElementById("symptomInput").value.trim();
+            if (inputVal === "") {
+                renderSymptomDropdownItems(allSymptomsList);
+            } else {
+                const filtered = allSymptomsList.filter(s => s.toLowerCase().includes(inputVal.toLowerCase()));
+                renderSymptomDropdownItems(filtered);
+            }
+            dropdown.style.display = "block";
+            toggleBtn.classList.add("open");
+            isSymptomDropdownOpen = true;
+        }
+    }
+
+    function closeSymptomDropdown() {
+        const dropdown = document.getElementById("symptomDropdown");
+        const toggleBtn = document.getElementById("symptomDropdownToggleBtn");
+        if(dropdown) dropdown.style.display = "none";
+        if(toggleBtn) toggleBtn.classList.remove("open");
+        isSymptomDropdownOpen = false;
+    }
+
+    function renderSymptomDropdownItems(itemsList) {
+        const dropdown = document.getElementById("symptomDropdown");
+        dropdown.innerHTML = "";
+
+        if(itemsList.length > 0) {
+            itemsList.forEach(symptom => {
+                const div = document.createElement("div");
+                div.className = "dropdown-item";
+                div.textContent = symptom;
+                div.onclick = function(e) {
+                    e.stopPropagation();
+                    document.getElementById("symptomInput").value = symptom;
+                    document.getElementById("clearSymptomBtn").style.display = "block";
+                    closeSymptomDropdown();
+                    executeSymptomSearch(symptom);
+                };
+                dropdown.appendChild(div);
+            });
+            dropdown.style.display = "block";
+        } else {
+            dropdown.innerHTML = `<div class="dropdown-item" style="color:#aaa; cursor:default;"><i class="fa-solid fa-circle-xmark"></i> ไม่พบรายการอาการที่พิมพ์</div>`;
+            dropdown.style.display = "block";
+        }
+    }
+
+    function filterSymptomsText() {
+        const inputVal = document.getElementById("symptomInput").value.toLowerCase().trim();
+        const clearBtn = document.getElementById("clearSymptomBtn");
+
+        // เคลียร์การค้นหาด้านอื่น
+        document.getElementById("modernDrugInput").value = "";
+        document.getElementById("clearSearchBtn").style.display = "none";
+        closeDropdown();
+
+        if(inputVal === "") {
+            clearBtn.style.display = "none";
+            renderSymptomDropdownItems(allSymptomsList);
+            clearSymptomSelection();
+            resetContainerToDefault();
+            return;
+        }
+
+        clearBtn.style.display = "block";
+        const filtered = allSymptomsList.filter(s => s.toLowerCase().includes(inputVal));
+        renderSymptomDropdownItems(filtered);
+
+        executeSymptomSearch(inputVal);
+    }
+
+    function clearSymptomInput() {
+        document.getElementById("symptomInput").value = "";
+        document.getElementById("clearSymptomBtn").style.display = "none";
+        closeSymptomDropdown();
+        clearSymptomSelection();
+        resetContainerToDefault();
+    }
+
+    function executeSymptomSearch(searchTerm) {
+        const query = searchTerm.toLowerCase().trim();
+        
+        // กรองยาสมุนไพรที่ชื่อกลุ่มอาการ, ข้อบ่งใช้ หรือสรรพคุณ ตรงกับคำค้น
+        currentFilteredList = herbDatabase.filter(herb => 
+            herb.category.toLowerCase().includes(query) ||
+            herb.indication.toLowerCase().includes(query) ||
+            herb.name.toLowerCase().includes(query)
+        );
+
+        // ไฮไลต์ปุ่มกลุ่มอาการอัตโนมัติหากตรงกับหมวดใดหมวดหนึ่ง
+        autoHighlightSymptomCard(query);
+
+        renderResults(currentFilteredList);
+    }
+
+    function autoHighlightSymptomCard(query) {
+        clearSymptomSelection();
+        herbDatabase.forEach(herb => {
+            if (query.includes(herb.category.toLowerCase()) || herb.category.toLowerCase().includes(query)) {
+                const targetCard = document.getElementById(`card-${herb.category}`);
+                if (targetCard) targetCard.classList.add('active');
+            }
+        });
+    }
+
+    /* --- ส่วนระบบเดิมที่มีอยู่ --- */
     function toggleRiskGroup(btnId) {
         riskStatus[btnId] = !riskStatus[btnId];
         const btn = document.getElementById(btnId);
-        
+
         if (riskStatus[btnId]) {
             btn.classList.add('checked');
         } else {
@@ -1257,9 +1416,14 @@
         document.querySelectorAll('.symptom-card').forEach(card => card.classList.remove('active'));
         cardElem.classList.add('active');
 
+        // เคลียร์ค่าค้นหาในช่องพิมพ์
         document.getElementById("modernDrugInput").value = "";
         document.getElementById("clearSearchBtn").style.display = "none";
         closeDropdown();
+
+        document.getElementById("symptomInput").value = "";
+        document.getElementById("clearSymptomBtn").style.display = "none";
+        closeSymptomDropdown();
 
         currentFilteredList = herbDatabase.filter(herb => herb.category === categoryName);
         renderResults(currentFilteredList);
@@ -1286,6 +1450,7 @@
         if (isDropdownOpen) {
             closeDropdown();
         } else {
+            closeSymptomDropdown(); // ปิดอันอื่น
             clearSymptomSelection();
             const inputVal = document.getElementById("modernDrugInput").value.trim();
             if (inputVal === "") {
@@ -1303,15 +1468,15 @@
     function closeDropdown() {
         const dropdown = document.getElementById("modernDrugDropdown");
         const toggleBtn = document.getElementById("dropdownToggleBtn");
-        dropdown.style.display = "none";
-        toggleBtn.classList.remove("open");
+        if(dropdown) dropdown.style.display = "none";
+        if(toggleBtn) toggleBtn.classList.remove("open");
         isDropdownOpen = false;
     }
 
     function renderDropdownItems(itemsList) {
         const dropdown = document.getElementById("modernDrugDropdown");
         dropdown.innerHTML = "";
-        
+
         if(itemsList.length > 0) {
             itemsList.forEach(drug => {
                 const div = document.createElement("div");
@@ -1338,6 +1503,11 @@
         const clearBtn = document.getElementById("clearSearchBtn");
         clearSymptomSelection();
 
+        // เคลียร์ค่าค้นหาช่องอาการ
+        document.getElementById("symptomInput").value = "";
+        document.getElementById("clearSymptomBtn").style.display = "none";
+        closeSymptomDropdown();
+
         if(inputVal === "") {
             clearBtn.style.display = "none";
             renderDropdownItems(allUniqueDrugs);
@@ -1348,7 +1518,7 @@
         clearBtn.style.display = "block";
         const filtered = allUniqueDrugs.filter(drug => drug.toLowerCase().includes(inputVal));
         renderDropdownItems(filtered);
-        
+
         const exactMatch = allUniqueDrugs.find(d => d.toLowerCase() === inputVal);
         if(exactMatch) {
             searchByModernDrugName(exactMatch);
