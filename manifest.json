@@ -1,20 +1,24 @@
 {
-  "name": " Smart Herb",
-  "short_name": "Smart Herb",
+  "name": "Smart Herb - ระบบค้นหายาสมุนไพรฉลาด",
+  "short_name": "SmartHerb",
+  "description": "ระบบสืบค้นข้อมูลยาสมุนไพรและคัดกรองความปลอดภัยในการใช้ยา (Patient Safety)",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#e0f2f1",
   "theme_color": "#00897b",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icons/icon-192.png",
+      "src": "./icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "./icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
