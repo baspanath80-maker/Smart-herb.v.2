@@ -2,26 +2,33 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>ระบบค้นหายาสมุนไพรฉลาด (Smart Herb)</title>
     
-    <!-- PWA Integration Links -->
-    <link rel="manifest" href="./manifest.json">
+    <!-- PWA & Meta Tags -->
     <meta name="theme-color" content="#00897b">
-    
-    <!-- Apple Touch Icon สำหรับ iOS -->
-    <link rel="apple-touch-icon" href="./icons/icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+    <meta name="background-color" content="#e0f2f1">
+    <meta name="description" content="ระบบค้นหายาสมุนไพรฉลาดและคัดกรองความปลอดภัยในการใช้ยา">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Smart Herb">
 
-    <!-- Font Awesome CDN -->
+    <!-- Icons & Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" sizes="180x180" href="./180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./512.png">
+
+    <!-- Font Awesome & Fonts CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Krub:wght@400;600;700&family=Mitr:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Krub:wght@400;600;700&family=Mitr:wght@300;400;600&display=swap');
-
         :root {
             --primary: #00897b;
             --primary-dark: #00695c;
+            --secondary: #80cbc4;
             --accent: #ffb300;
             --bg-body: #e0f2f1;
             --bg-card: #ffffff;
@@ -41,7 +48,7 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             margin: 0;
-            padding: 10px;
+            padding: 12px;
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
@@ -72,22 +79,176 @@
 
         .container {
             width: 100%;
-            max-width: 100%;
-            margin: 0;
+            max-width: 960px;
+            margin: 0 auto;
             padding: 0;
             flex: 1;
+        }
+
+        /* PWA Card Styles (สไตล์ใหม่) */
+        .install-app-box {
+            background: #ffffff;
+            border: 1.5px solid #b2dfdb;
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 6px 15px rgba(0, 137, 123, 0.08);
+        }
+        .pwa-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .pwa-text-info h3 {
+            margin: 0;
+            color: var(--primary-dark);
+            font-family: 'Mitr', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .pwa-text-info p {
+            margin: 2px 0 0;
+            font-size: 13px;
+            color: #607d8b;
+        }
+        .btn-group-pwa {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .btn-install-direct {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-family: 'Mitr', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 3px 8px rgba(0, 137, 123, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-install-direct:hover { background: var(--primary-dark); }
+        .btn-how-to {
+            background: #e0f2f1;
+            color: var(--primary-dark);
+            border: 1px solid var(--secondary);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-family: 'Mitr', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .btn-how-to:hover { background: #b2dfdb; }
+
+        /* Shortcut Modal */
+        .shortcut-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100000;
+        }
+        .shortcut-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+        }
+        .shortcut-card {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%,-50%);
+            width: calc(100% - 30px);
+            max-width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: white;
+            border-radius: 25px;
+            padding: 30px 22px 22px;
+            text-align: center;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+        }
+        .shortcut-close {
+            position: absolute;
+            right: 15px;
+            top: 12px;
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            font-size: 22px;
+            color: #777;
+            cursor: pointer;
+        }
+        .shortcut-card h2 {
+            display: block;
+            color: var(--primary-dark);
+            font-family: 'Mitr', sans-serif;
+            font-size: 20px;
+            margin: 10px 0;
+        }
+        .shortcut-card > p {
+            color: #607d8b;
+            font-size: 14px;
+            margin: 0 0 10px;
+        }
+        .shortcut-steps {
+            text-align: left;
+            margin-top: 15px;
+        }
+        .shortcut-steps div {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 5px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .shortcut-steps span {
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+            font-size: 13px;
+        }
+        .shortcut-steps p { margin: 2px 0 0; }
+        .shortcut-ok {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            font-family: 'Mitr', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
         }
 
         header {
             background-color: var(--primary);
             color: white;
             padding: 20px 15px;
-            border-radius: 15px;
+            border-radius: 18px;
             text-align: center;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
             margin-bottom: 15px;
-            position: relative;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -95,7 +256,6 @@
         }
 
         .herb-logo-container {
-            position: relative;
             width: 70px;
             height: 70px;
             background: #ffffff;
@@ -109,11 +269,7 @@
             overflow: hidden;
         }
 
-        .herb-logo-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .herb-logo-img { width: 100%; height: 100%; object-fit: cover; }
 
         @keyframes floatLogo {
             0%, 100% { transform: translateY(0); }
@@ -127,27 +283,11 @@
             font-weight: 600;
         }
 
-        .pwa-install-btn {
-            display: none;
-            margin-top: 10px;
-            background: var(--accent);
-            color: #37474f;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 50px;
-            font-family: 'Mitr', sans-serif;
-            font-size: 0.9em;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-        }
-
         /* Patient Safety Checklist */
         .safety-checklist-area {
             background-color: #ffffff;
             padding: 18px;
-            border-radius: 15px;
+            border-radius: 18px;
             box-shadow: var(--shadow-soft);
             margin-bottom: 15px;
         }
@@ -165,7 +305,6 @@
 
         .blink-danger {
             color: #d32f2f;
-            font-weight: bold;
             animation: textBlink 1s infinite alternate;
         }
 
@@ -176,7 +315,7 @@
 
         .risk-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 10px;
         }
 
@@ -184,7 +323,7 @@
             background: #f8fafc;
             border: 2px solid #e2e8f0;
             border-radius: 12px;
-            padding: 14px 10px;
+            padding: 12px 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -198,34 +337,30 @@
         .risk-card:hover {
             border-color: #ef5350;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(239, 83, 80, 0.15);
         }
 
         .risk-card .risk-icon {
-            font-size: 1.6em;
-            margin-bottom: 6px;
+            font-size: 1.5em;
+            margin-bottom: 5px;
             color: #e53935;
-            transition: color 0.25s ease;
         }
 
         .risk-card .risk-title {
             font-family: 'Mitr', sans-serif;
             font-size: 0.88em;
             font-weight: 600;
-            line-height: 1.2;
             color: var(--text-main);
         }
 
         .risk-card .risk-desc {
-            font-size: 0.75em;
+            font-size: 0.72em;
             color: #78909c;
-            margin-top: 4px;
+            margin-top: 3px;
         }
 
         .risk-card.checked {
             background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%);
             border-color: #b71c1c;
-            color: white;
             box-shadow: 0 4px 12px rgba(183, 28, 28, 0.35);
             transform: translateY(-2px);
         }
@@ -240,7 +375,7 @@
         .search-area {
             background-color: var(--bg-card);
             padding: 15px;
-            border-radius: 15px;
+            border-radius: 18px;
             box-shadow: var(--shadow-soft);
             margin-bottom: 15px;
         }
@@ -256,16 +391,16 @@
 
         .symptom-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 10px;
-            margin-bottom: 18px;
+            margin-bottom: 15px;
         }
 
         .symptom-card {
             background: #f8fafc;
             border: 2px solid #e2e8f0;
             border-radius: 12px;
-            padding: 14px 10px;
+            padding: 12px 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -278,21 +413,18 @@
         .symptom-card:hover {
             border-color: var(--primary);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 137, 123, 0.15);
         }
 
         .symptom-card.active {
             background: var(--primary);
             border-color: var(--primary-dark);
             color: white;
-            box-shadow: 0 4px 12px rgba(0, 137, 123, 0.3);
         }
 
         .symptom-card .symptom-icon {
-            font-size: 1.6em;
-            margin-bottom: 6px;
+            font-size: 1.5em;
+            margin-bottom: 5px;
             color: var(--primary);
-            transition: color 0.25s ease;
         }
 
         .symptom-card.active .symptom-icon { color: #ffffff; }
@@ -301,13 +433,12 @@
             font-family: 'Mitr', sans-serif;
             font-size: 0.88em;
             font-weight: 600;
-            line-height: 1.2;
         }
 
         .symptom-card .symptom-desc {
-            font-size: 0.75em;
+            font-size: 0.72em;
             opacity: 0.8;
-            margin-top: 4px;
+            margin-top: 3px;
         }
 
         .symptom-card.active .symptom-desc { color: #e0f2f1; }
@@ -364,18 +495,21 @@
             z-index: 100; margin-top: 5px; display: none;
         }
 
-        .dropdown-item { padding: 8px 15px; cursor: pointer; font-size: 0.9em; }
+        .dropdown-item { padding: 9px 15px; cursor: pointer; font-size: 0.9em; }
         .dropdown-item:hover { background-color: #e0f2f1; color: var(--primary-dark); }
 
         #resultContainer {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             gap: 15px;
             width: 100%;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 800px) {
             #resultContainer { grid-template-columns: 1fr; }
+            .pwa-header-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .btn-group-pwa { width: 100%; }
+            .btn-install-direct, .btn-how-to { flex: 1; justify-content: center; }
         }
 
         .herb-card {
@@ -399,8 +533,8 @@
         }
 
         .herb-name-area { display: flex; align-items: center; gap: 10px; }
-        .herb-card-icon { font-size: 1.6em; color: var(--primary); }
-        .herb-title { font-family: 'Mitr', sans-serif; font-size: 1.2em; color: var(--primary-dark); margin: 0; }
+        .herb-card-icon { font-size: 1.5em; color: var(--primary); }
+        .herb-title { font-family: 'Mitr', sans-serif; font-size: 1.15em; color: var(--primary-dark); margin: 0; }
         .herb-sub { font-size: 0.85em; color: #78909c; }
 
         .replace-tag {
@@ -411,7 +545,7 @@
             border-radius: 50px;
             font-size: 0.8em;
             display: inline-block;
-            margin-left: 35px;
+            margin-left: 32px;
         }
 
         .danger-alert-banner {
@@ -420,7 +554,7 @@
             padding: 8px 12px;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 0.88em;
+            font-size: 0.85em;
             margin-bottom: 10px;
             line-height: 1.4;
         }
@@ -439,12 +573,12 @@
         .info-block.contraindication { border-left: 4px solid var(--danger); }
         .info-block.side-effect { border-left: 4px solid var(--warning); }
 
-        .info-head { font-weight: 700; margin-bottom: 2px; font-size: 0.88em; }
+        .info-head { font-weight: 700; margin-bottom: 2px; font-size: 0.85em; }
         .indication .info-head { color: var(--success); }
         .dosage .info-head { color: var(--info); }
         .contraindication .info-head { color: var(--danger); }
         .side-effect .info-head { color: var(--warning); }
-        .info-content { color: var(--text-main); font-size: 0.88em; line-height: 1.35; }
+        .info-content { color: var(--text-main); font-size: 0.85em; line-height: 1.35; }
 
         .no-result {
             grid-column: 1 / -1;
@@ -457,26 +591,75 @@
         }
 
         footer {
-            margin-top: 20px;
+            margin-top: 25px;
             padding: 15px 10px;
             text-align: center;
             font-size: 0.85em;
             color: #004d40;
             background-color: rgba(255, 255, 255, 0.7);
-            border-radius: 10px;
+            border-radius: 12px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
+
+    <!-- กล่องติดตั้งทางลัด PWA -->
+    <div class="install-app-box" id="installBox">
+      <div class="pwa-header-row">
+        <div class="pwa-text-info">
+          <h3><i class="fa-solid fa-leaf"></i> เพิ่ม Smart Herb ลงหน้าจอ</h3>
+          <p>เปิดค้นหาได้รวดเร็วทันใจ ใช้งานได้แม้ไม่มีสัญญาณอินเทอร์เน็ต</p>
+        </div>
+        <div class="btn-group-pwa">
+          <button type="button" class="btn-install-direct" id="directInstallBtn" style="display: none;">
+            <i class="fa-solid fa-download"></i> ติดตั้งแอป
+          </button>
+          <button type="button" class="btn-how-to" id="howInstallButton">
+            วิธีติดตั้ง
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- หน้าต่าง Modal แนะนำขั้นตอนการสร้างทางลัด -->
+    <div class="shortcut-modal" id="shortcutModal" style="display:none;">
+      <div class="shortcut-overlay"></div>
+      <div class="shortcut-card">
+        <button type="button" class="shortcut-close" id="closeShortcutModal" aria-label="ปิด">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h2>วิธีติดตั้งแบบทางลัด</h2>
+        <p>เพิ่มระบบสืบค้นยาสมุนไพรลงบนหน้าจอหลัก (Home Screen)</p>
+        <div class="shortcut-steps">
+          <div>
+            <span>1</span>
+            <p>เปิดเว็บด้วย <strong>Chrome</strong> (Android) หรือ <strong>Safari</strong> (iOS)</p>
+          </div>
+          <div>
+            <span>2</span>
+            <p>กด <strong>⋮</strong> (Chrome) หรือปุ่มแชร์ <strong><i class="fa-solid fa-arrow-up-from-bracket"></i></strong> (Safari)</p>
+          </div>
+          <div>
+            <span>3</span>
+            <p>เลือก <strong>"เพิ่มลงในหน้าจอหลัก"</strong> (Add to Home Screen)</p>
+          </div>
+          <div>
+            <span>4</span>
+            <p>กด <strong>"เพิ่ม"</strong> เพื่อยืนยัน</p>
+          </div>
+        </div>
+        <button type="button" class="shortcut-ok" id="shortcutOk">เข้าใจแล้ว</button>
+      </div>
+    </div>
+
     <header>
         <div class="herb-logo-container">
-            <img src="./icons/icon-192.png" alt="Smart Herb Logo" class="herb-logo-img" onerror="this.style.display='none'; document.getElementById('fallbackIcon').style.display='block';">
+            <img src="./192.png" alt="Smart Herb Logo" class="herb-logo-img" onerror="this.style.display='none'; document.getElementById('fallbackIcon').style.display='block';">
             <div id="fallbackIcon" style="display:none; font-size:2em; color:var(--primary);"><i class="fa-solid fa-leaf"></i></div>
         </div>
-        <h1>ระบบค้นหายาสมุนไพร (Smart Herb)</h1>
-        <button id="btnInstall" class="pwa-install-btn"><i class="fa-solid fa-download"></i> ติดตั้ง Smart Herb</button>
+        <h1>ระบบค้นหายาสมุนไพรฉลาด (Smart Herb)</h1>
     </header>
 
     <!-- Patient Safety Checklist -->
@@ -491,55 +674,46 @@
                 <div class="risk-title">เด็ก</div>
                 <div class="risk-desc">Children</div>
             </div>
-
             <div class="risk-card" id="btnElder" onclick="toggleRiskGroup('btnElder')">
                 <div class="risk-icon"><i class="fa-solid fa-person-cane"></i></div>
                 <div class="risk-title">ผู้สูงอายุ</div>
                 <div class="risk-desc">Elderly</div>
             </div>
-
             <div class="risk-card" id="btnPreg" onclick="toggleRiskGroup('btnPreg')">
                 <div class="risk-icon"><i class="fa-solid fa-person-breastfeeding"></i></div>
                 <div class="risk-title">ตั้งครรภ์</div>
                 <div class="risk-desc">Pregnancy</div>
             </div>
-
             <div class="risk-card" id="btnLact" onclick="toggleRiskGroup('btnLact')">
                 <div class="risk-icon"><i class="fa-solid fa-baby-carriage"></i></div>
                 <div class="risk-title">ให้นมบุตร</div>
                 <div class="risk-desc">Lactation</div>
             </div>
-
             <div class="risk-card" id="btnChronic" onclick="toggleRiskGroup('btnChronic')">
                 <div class="risk-icon"><i class="fa-solid fa-hospital"></i></div>
                 <div class="risk-title">โรคประจำตัว</div>
                 <div class="risk-desc">รักษาต่อเนื่อง</div>
             </div>
-
             <div class="risk-card" id="btnLiver" onclick="toggleRiskGroup('btnLiver')">
                 <div class="risk-icon"><i class="fa-solid fa-notes-medical"></i></div>
                 <div class="risk-title">โรคตับ</div>
                 <div class="risk-desc">Liver Disease</div>
             </div>
-
             <div class="risk-card" id="btnKidney" onclick="toggleRiskGroup('btnKidney')">
                 <div class="risk-icon"><i class="fa-solid fa-droplet"></i></div>
                 <div class="risk-title">โรคไต</div>
                 <div class="risk-desc">Kidney Disease</div>
             </div>
-
             <div class="risk-card" id="btnBlood" onclick="toggleRiskGroup('btnBlood')">
                 <div class="risk-icon"><i class="fa-solid fa-vial"></i></div>
                 <div class="risk-title">ต้านเกล็ดเลือด</div>
                 <div class="risk-desc">Anticoagulants</div>
             </div>
-
             <div class="risk-card" id="btnAllergy" onclick="toggleRiskGroup('btnAllergy')">
                 <div class="risk-icon"><i class="fa-solid fa-hand-dots"></i></div>
                 <div class="risk-title">ประวัติแพ้ยา</div>
                 <div class="risk-desc">หรือแพ้สมุนไพร</div>
             </div>
-
             <div class="risk-card" id="btnPoly" onclick="toggleRiskGroup('btnPoly')">
                 <div class="risk-icon"><i class="fa-solid fa-pills"></i></div>
                 <div class="risk-title">ใช้ยาหลายชนิด</div>
@@ -956,7 +1130,76 @@
     let allUniqueDrugs = [];
     let currentFilteredList = [];
     let isDropdownOpen = false;
-    let deferredPrompt;
+
+    /* PWA Install & Modal Logic (แบบเดียวกับตัวอย่าง) */
+    let deferredPrompt = null;
+    const installBox = document.getElementById("installBox");
+    const directInstallBtn = document.getElementById("directInstallBtn");
+    const howInstallButton = document.getElementById("howInstallButton");
+    const shortcutModal = document.getElementById("shortcutModal");
+    const closeShortcutModal = document.getElementById("closeShortcutModal");
+    const shortcutOk = document.getElementById("shortcutOk");
+
+    function isStandalone(){
+      return (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true);
+    }
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js")
+          .then(reg => console.log("SW Registered:", reg.scope))
+          .catch(err => console.error("SW Registration Failed:", err));
+      });
+    }
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (directInstallBtn) {
+        directInstallBtn.style.display = "inline-flex";
+      }
+    });
+
+    if (directInstallBtn) {
+      directInstallBtn.addEventListener("click", async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`Prompt outcome: ${outcome}`);
+        deferredPrompt = null;
+        directInstallBtn.style.display = "none";
+      });
+    }
+
+    howInstallButton.addEventListener("click", () => {
+      shortcutModal.style.display = "block";
+      document.body.style.overflow = "hidden";
+    });
+
+    function closeShortcut(){
+      shortcutModal.style.display = "none";
+      document.body.style.overflow = "";
+    }
+
+    closeShortcutModal.addEventListener("click", closeShortcut);
+    shortcutOk.addEventListener("click", closeShortcut);
+    document.querySelector(".shortcut-overlay").addEventListener("click", closeShortcut);
+
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape" && shortcutModal.style.display === "block"){
+        closeShortcut();
+      }
+    });
+
+    window.addEventListener("appinstalled", () => {
+      deferredPrompt = null;
+      shortcutModal.style.display = "none";
+      installBox.style.display = "none";
+    });
+
+    if(isStandalone()){
+      installBox.style.display = "none";
+    }
 
     window.onload = function() {
         let uniqueDrugs = new Set();
@@ -978,29 +1221,7 @@
                 closeDropdown();
             }
         });
-
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('Service Worker Registered Successfully'))
-                .catch(err => console.error('SW Registration Failed:', err));
-        }
     }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        const installBtn = document.getElementById('btnInstall');
-        installBtn.style.display = 'block';
-
-        installBtn.addEventListener('click', () => {
-            installBtn.style.display = 'none';
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                deferredPrompt = null;
-            });
-        });
-    });
 
     function toggleRiskGroup(btnId) {
         riskStatus[btnId] = !riskStatus[btnId];
