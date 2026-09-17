@@ -1,9 +1,9 @@
 {
-  "name": "Smart Herb - ระบบค้นหายาสมุนไพรฉลาด",
+  "name": "Smart Herb",
   "short_name": "Smart Herb",
   "description": "ระบบค้นหายาสมุนไพรฉลาดและคัดกรองความปลอดภัยในการใช้ยา โรงพยาบาลดอนจาน",
   "lang": "th",
-  "start_url": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -20,13 +20,25 @@
       "src": "./192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "./512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
